@@ -15,7 +15,20 @@ AT "https://bjd.so.ch"
 VERSION "2025-04-22"  =
   IMPORTS GeometryCHLV95_V1;
   
-  
+  !! eCH-0211:
+  !! - Baugesuchsidentifikatoren
+  !! - Gesuchstyp: Freitext, kein Aufzähltyp (Baugesuch, Bauanfrage, Bauanzeigen, ...)
+  !! - Bemerkungen (zum Baugesuch)
+  !! - Verfahrensart: Freitext, kein Aufzähltyp (– Ordentliches Verfahren, Vereinfchates Verfahren, Meldeverfahren, ...)
+
+  !! SOBAU-Modell:
+  !! - art: Baugesuch, Voranfrage, ...
+  !! - entscheid: Zustimmung, Ablehnung, ...
+  !! - sistiert: ...
+
+  !! -> Was ist ein eigenes Attribut und was läuft alles unter Status?
+
+
 
     TOPIC Topic2 =
     
