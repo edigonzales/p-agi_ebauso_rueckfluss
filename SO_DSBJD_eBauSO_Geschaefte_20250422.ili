@@ -190,6 +190,13 @@ VERSION "2025-04-22"  =
         /**
          */
         EGID : TEXT; !! FIXME
+
+
+        !! Entscheid_Beurteilung
+        !! Publikation (Struktur startdatum und enddatum)
+
+
+
         /** Datum des Entscheides der Leitbehörde.
          */
         Datum_Entscheid : INTERLIS.XMLDate;
