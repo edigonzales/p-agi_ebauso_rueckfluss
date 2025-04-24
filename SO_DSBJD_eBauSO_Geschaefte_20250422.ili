@@ -1,0 +1,250 @@
+INTERLIS 2.3;
+
+/** !!------------------------------------------------------------------------------
+ * !! Version    | wer | Änderung
+ * !!------------------------------------------------------------------------------
+ * !! 2025-04-22 | sz  | Ersterfassung
+ * !!==============================================================================
+ */
+!!@ furtherInformation=http://geo.so.ch/models/DSBJD/SO_DSBJD_eBauSO_Geschaefte_20250422.uml
+!!@ technicalContact=mailto:agi@bd.so.ch
+!!@ shortDescription="Datenmodell für das Verwalten der elektronischen Baugesuchsgeschäfte (aus eBauSO)."
+!!@ title="Elektronische Baugesuchsgeschäfte"
+MODEL SO_DSBJD_eBauSO_Geschaefte_20250422 (de)
+AT "https://bjd.so.ch"
+VERSION "2025-04-22"  =
+  IMPORTS GeometryCHLV95_V1;
+  
+  DOMAIN
+
+    /** Status des Geschäfts
+     */
+    Status_Geschaeft = (
+      /** ­Das Gesuch wurde im eBau-Portal (Portal für Gesuchsteller) erstellt, ist aber noch nicht bei der Leitbehörde eingereicht und steht nur im eBau-Portal und nicht eBau-intern (Behördenbereich) zur Verfügung.
+        */
+      !!@ili2db.dispName = "neu"
+      neu,
+      Pruefung (
+        /** ­Das Gesuch wurde durch den Gesuchstellenden eingereicht und muss durch die Leitbehörde eBau-intern (Behördenbereich) formell geprüft werden.
+        */
+        !!@ili2db.dispName = "formelle Prüfung"
+        formell,
+        /** ­Das Gesuch muss durch die Leitbehörde eBau-intern (Behördenbereich) materiell geprüft werden.
+        */
+        !!@ili2db.dispName = "materielle Prüfung"
+        materiell
+      ),
+      /** ­Die Leitbehörde hat während der formellen und materiellen Prüfung die Möglichkeit Dossiers zu korrigieren.
+        */
+      !!@ili2db.dispName = "in Korrektur"
+      in_Korrektur,
+      /** Die formelle resp. materielle Prüfung hat ergeben, dass das Gesuch erhebliche Mängel aufweist und zurückgewiesen werden muss.
+        */
+      !!@ili2db.dispName = "zur Rückweisung"
+      zur_Rueckweisung,
+      /** ­Das Gesuch wurde durch die Leitbehörde zurückgewiesen. ­Das Gesuch wurde durch die Leitbehörde zurückgewiesen. ­Der Gesuchsteller kann das Gesuch kopieren, die Mängel beheben und neu einreichen (neue Dossier-Nummer).
+        */
+      !!@ili2db.dispName = "zurückgewiesen"
+      zurueckgewiesen,
+      /** Der Gesuchsteller zieht das Gesuch selbst zurück.
+        */
+      !!@ili2db.dispName = "zum Rückzug"
+      zum_Rueckzug,
+      /** Die Leitbehörde hat den Rückzug (als Entscheid / Beurteilung) bestätigt.
+        */
+      !!@ili2db.dispName = "zurückgezogen"
+      zurueckgezogen,
+      /** ­	Nach der materiellen Prüfung befindet sich das Gesuch im Zustand «Zirkulation initialisiseren». Die Zirkulation kann durch die Leitbehörde auch direkt übersprungen werden
+        */
+      !!@ili2db.dispName = "Zirkulation initialisieren"
+      Zirkulation_initialisieren,
+      /** Falls die Zirkulation durch die Leitbehörde initiiert wird, befindet sich das Gesuch im Status «In Zirkulation».
+        */
+      !!@ili2db.dispName = "in Zirkulation"
+      in_Zirkulation,
+      /** Sobald die Zirkulation angeschlossen wird, ist das Gesuch im Status «Entscheid».
+        */
+      !!@ili2db.dispName = "Entscheid"
+      Entscheid,
+      /** Sobald der Entscheid getroffen wurde, befindet sich das Gesuch im Status «entschieden».
+        */
+      !!@ili2db.dispName = "entschieden"
+      entschieden,
+      /** ­Nachdem über das Gesuch entschieden wurde, kann der Baubegleitungsprozess gestartet werden.­	Der Baubegleitungsprozess kann auch direkt übersprungen werden.
+        */
+      !!@ili2db.dispName = "Baubegleitung"
+      Baubegleitung,
+      /**	Zu guter Letzt, kann das Verfahren abgeschlossen werden und das Gesuch erhält den Status «abgeschlossen».
+        */
+      !!@ili2db.dispName = "abgeschlossen"
+      abgeschlossen
+    );
+
+    /** Entscheid resp. Beurteilung des Geschäftes.
+     */
+    Entscheid_Beurteilung = (
+        /** Das Baugesuch wurde abgelehnt.
+         */
+        !!@ili2db.dispName = "Ablehnung"
+        Ablehnung,
+        /** Die Baugenehmigung wurde erteilt.
+         */
+        !!@ili2db.dispName = "Zustimmung"
+        Zustimmung,
+        /** Die Baugenehmigung wurde mit Auflagen erteilt.
+         */
+        !!@ili2db.dispName = "Teilzustimmung"
+        Teilzustimmung,
+        /** Das Baugesuch wurde durch die Gesuchstellenden zurückgezogen.
+         */
+        !!@ili2db.dispName = "Rückzug"
+        Rueckzug
+    );
+
+    STRUCTURE PointStructure =
+      Point : GeometryCHLV95_V1.Coord2;
+    END PointStructure;
+  
+    !!@ ili2db.mapping=MultiPoint
+    STRUCTURE MultiPoint =
+      Points : BAG {1..*} OF SO_DSBJD_eBauSO_Geschaefte_20250422.PointStructure;
+    END MultiPoint;
+
+    STRUCTURE Adresse_ =
+      Strassenname : TEXT*200;
+      Hausnummer : TEXT*10;
+      PLZ : MANDATORY 1000..9999;
+      Ortschaft : MANDATORY TEXT*200;
+    END Adresse_;
+
+    STRUCTURE Natuerliche_Person_ = 
+      Name : TEXT*100;
+      Vorname : TEXT*100;
+    END Natuerliche_Person_;
+
+    STRUCTURE Juristische_Person_ = 
+      Name : TEXT*200;
+    END Juristische_Person_;
+
+    STRUCTURE PersonAdresse =
+      Natuerliche_Person : MANDATORY Natuerliche_Person_;
+      Juristische_Person : Juristische_Person_;
+      Adresse : MANDATORY Adresse_;
+    END PersonAdresse;
+
+
+    TOPIC Geschaefte =
+
+      /** Elektronische Baugesuchsgeschäfte
+       */
+       CLASS Geschaeft =
+        /** Kantonsweit eindeutiger Identifikator des Geschäfts gemäss eBau-Software.
+         */
+        Identifikator : MANDATORY TEXT*72; !! ??
+        /** Gemeindenummer (der politischen Gemeinde)
+         */
+        BFSNr : MANDATORY 0..9999;
+        /**
+         */
+        Verfahrensart : MANDATORY TEXT; !! TODO Gibt es sowas? Ordentliches Verfahren, Vereinfachtes Verfahren, Meldeverfahren? Aufzähltyp?
+        /**
+         */
+        Status : MANDATORY Status_Geschaeft;
+        /**
+         */
+        Bauwerk_Typ : MANDATORY TEXT*1000; !! TODO Aufzähltyp oder Freitext? Länge?
+
+        !! siehe Word: lokalisation struct für Adresse. EGRID. EGID.
+
+
+        /** FIXME Gesuchssteller = Bauherrschaft
+         */
+        Gesuchssteller : MANDATORY SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse; 
+        /**
+         */
+        Grundeigentuemer : TEXT;
+        /**
+         */
+        Projektverfasser : TEXT;
+        /**
+         */
+        Rechnungsempfaenger : TEXT;
+
+
+
+        /**
+         */
+        Geometrie_Punkt :SO_DSBJD_eBauSO_Geschaefte_20250422.MultiPoint;
+        /**
+         */
+        Geometrie_Linie : GeometryCHLV95_V1.MultiLine;
+        /**
+         */
+        Geometrie_Flaeche : GeometryCHLV95_V1.MultiSurface;
+        /**
+         */
+        Lokalisation : Adresse_;
+        /**
+         */
+        EGRID : MANDATORY TEXT; !! FIXME und können mehrere sein. ili24????
+        /**
+         */
+        EGID : TEXT; !! FIXME
+        /** Datum des Entscheides der Leitbehörde.
+         */
+        Datum_Entscheid : INTERLIS.XMLDate;
+
+
+        /** URL für die Anzeige des Geschäftes in eBau.
+         */
+        eBau_Link : MANDATORY INTERLIS.URI;
+
+        /** Es muss mindestens eine Geometrie vorhanden sein. TODO: Ist das so? Oder kann bei einem Status auch was optional sein?
+         */
+        MANDATORY CONSTRAINT DEFINED(Geometrie_Punkt) OR DEFINED(Geometrie_Linie) OR DEFINED(Geometrie_Flaeche);
+      END Geschaeft;
+
+
+    END Geschaefte;
+
+  !! eCH-0211:
+  !! - Baugesuchsidentifikatoren
+  !! - Gesuchstyp: Freitext, kein Aufzähltyp (Baugesuch, Bauanfrage, Bauanzeigen, ...)
+  !! - Bemerkungen (zum Baugesuch)
+  !! - Verfahrensart: Freitext, kein Aufzähltyp (Ordentliches Verfahren, Vereinfchates Verfahren, Meldeverfahren, ...)
+
+  !! SOBAU-Modell:
+  !! - art: Baugesuch, Voranfrage, ...
+  !! - entscheid: Zustimmung, Ablehnung, ...
+  !! - sistiert: ...
+
+  !! -> Was ist ein eigenes Attribut und was läuft alles unter Status?
+  !! -> Muss es SOBAU-Modell-kompatibel sein?
+  !! -> Welche Personeninfos sind vorhanden (siehe Konzept Rückfluss)? Sind es auch Organisationen? Glaub schon mal Dani gefragt.
+  !! -> Wie Personen/Org-Infos modellieren?
+  !! -> Hat ein Geschäft immer die gleiche ID? Wie geht es bei Zurückweisungen o.ä.?
+  !! -> Wahrscheinlich will man den Entscheid persistieren. Es braucht eine Enum für Entscheid. Dürfte es nur für gewissen enum Werte haben.
+  !! -> Bekommt jedes Geschäft den Status abgeschlossen? Auch solche, die zurückgezogen wurden? Falls ja, geht dieses Wissen bei uns verloren.
+
+  !! * Zukünftig drei Geometrietypen?
+  !! * Mindestens ein Geometrieattribut muss vorhanden sein.
+
+  !! * Publikation: Struct mit Startdatum und Enddatum
+
+
+    TOPIC Topic2 =
+    
+        STRUCTURE StructA =
+            attrText : TEXT*60;
+            attrInt : -1000 .. 1000;
+        END StructA;
+
+        CLASS ClassA =
+            attrText : TEXT*60;
+            attrStruct : StructA;
+            !!attrBag : BAG OF StructA;
+        END ClassA;
+        
+    END Topic2;
+
+END SO_DSBJD_eBauSO_Geschaefte_20250422.
