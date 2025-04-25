@@ -10,7 +10,7 @@ INTERLIS 2.4;
 !!@ technicalContact=mailto:agi@bd.so.ch
 !!@ shortDescription="Datenmodell für das Verwalten der elektronischen Baugesuchsgeschäfte (aus eBauSO)."
 !!@ title="Elektronische Baugesuchsgeschäfte"
-MODEL SO_DSBJD_eBauSO_Geschaefte_20250422 (de)
+MODEL XXXXXXSO_DSBJD_eBauSO_Geschaefte_20250422 (de)
 AT "https://bjd.so.ch"
 VERSION "2025-04-22"  =
   IMPORTS GeometryCHLV95_V2;
@@ -248,4 +248,4 @@ VERSION "2025-04-22"  =
         
     END Topic2;
 
-END SO_DSBJD_eBauSO_Geschaefte_20250422.
+END XXXXXXSO_DSBJD_eBauSO_Geschaefte_20250422.

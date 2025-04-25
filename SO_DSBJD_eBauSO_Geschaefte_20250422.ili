@@ -17,7 +17,9 @@ VERSION "2025-04-22"  =
   
   DOMAIN
 
-    /** Status des Geschäfts
+    !! TODO Aufzähltypen: Falls es nicht geht, muss es in der Darstellung ein "andere" geben und hässlich einfärben.
+
+    /** Status des Geschäfts. Aufzähltyp, damit nach Status garantiert gefiltert/eingefärbt werden kann.
      */
     Status_Geschaeft = (
       /** ­Das Gesuch wurde im eBau-Portal (Portal für Gesuchsteller) erstellt, ist aber noch nicht bei der Leitbehörde eingereicht und steht nur im eBau-Portal und nicht eBau-intern (Behördenbereich) zur Verfügung.
@@ -80,7 +82,7 @@ VERSION "2025-04-22"  =
       abgeschlossen
     );
 
-    /** Entscheid resp. Beurteilung des Geschäftes.
+    /** Entscheid resp. Beurteilung des Geschäftes. Aufzähltyp, damit nach Entscheid garantiert gefiltert/eingefärbt werden kann.
      */
     Entscheid = (
         /** Das Baugesuch wurde abgelehnt.
@@ -108,61 +110,77 @@ VERSION "2025-04-22"  =
       Ortschaft : MANDATORY TEXT*200;
     END Adresse_;
 
-    STRUCTURE Natuerliche_Person_ = 
+    STRUCTURE Natuerliche_Person = 
       Name : TEXT*100;
       Vorname : TEXT*100;
-    END Natuerliche_Person_;
+    END Natuerliche_Person;
 
-    STRUCTURE Juristische_Person_ = 
+    STRUCTURE Juristische_Person = 
       Name : TEXT*200;
-    END Juristische_Person_;
+    END Juristische_Person;
 
     STRUCTURE PersonAdresse =
-      Natuerliche_Person : MANDATORY Natuerliche_Person_;
-      Juristische_Person : Juristische_Person_;
+      !!@ili2db.mapping=JSON 
+      Natuerliche_Person : MANDATORY Natuerliche_Person;
+      !!@ili2db.mapping=JSON      
+      Juristische_Person : Juristische_Person;
+      !!@ili2db.mapping=JSON 
       Adresse : MANDATORY Adresse_;
     END PersonAdresse;
 
-    STRUCTURE Beurteilung = 
+    STRUCTURE Entscheid_ = 
       Entscheid : MANDATORY Entscheid;
       Datum : MANDATORY INTERLIS.XMLDate;
-    END Beurteilung;
+    END Entscheid_;
 
     STRUCTURE Publikation_ = 
       Startdatum : INTERLIS.XMLDate;
       Enddatum : INTERLIS.XMLDate;
     END Publikation_;
 
-    !! TODO Bedingt, dass man das Bauwerk "zeichnet" und nicht einfach Striche und Flächen. Oder halt pro Bauwerk ein Punkt.
-    !! Müsste mit eBau diskutiert werden. 
-    !! Man kann Geometrie schon als Eigenschaft des Geschäftes sehen, aber dann sehe ich schwarz für Lokalisation und EGID.
-    !! Da Bauwerke über mehreren Grundstücken zu liegen kommen können, verschachteln wir Bauwerke nicht in das Grundstück.
-    STRUCTURE Bauwerk_ = 
-      /** Typ des Bauwerkes
+    STRUCTURE Grundstueck = 
+      Nummer : MANDATORY TEXT*10;
+      EGRID : MANDATORY TEXT*14;
+      /** Eigentümer des Grundstückes
+        */
+      !!@ili2db.mapping=JSON 
+      Grundeigentuemer : SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse;
+    END Grundstueck;
+
+    STRUCTURE Bauwerk =
+      /** Bezeichnung des Gebäudes etc. Z.B. MFH A
        */
-      Bauwerk_Typ : MANDATORY TEXT*1000; !! TODO Aufzähltyp oder Freitext? Länge?
-      /** Lage des Bauwerkes
+      Bezeichnung : MANDATORY TEXT*200;
+      /** Typ des Bauwerkes. Abschliessende Liste aber nicht als Aufzähltyp modelliert.
        */
-      Geometrie_Punkt : GeometryCHLV95_V2.MultiPoint;
-      /** Lage / Geometrie des Bauwerkes
-       */
-      Geometrie_Linie : GeometryCHLV95_V2.MultiLine;
-      /** Geometrie des Bauwerkes
-       */
-      Geometrie_Flaeche : GeometryCHLV95_V2.MultiSurface;
-      /** Adresse des geplanten Bauwerkes
-       */ 
-      Lokalisation : Adresse_;
+      Bauwerk_Typ : MANDATORY TEXT*1000; 
       /** Eidgenössischer Gebäudeidentifikator
        */
       EGID : 1 .. 900000000;
-      /** Es muss mindestens eine Geometrie vorhanden sein. TODO: Ist das so? Oder kann bei einem Status auch was optional sein?
+      /** Art der Arbeiten: Neubau, Umbau, Abbruch
        */
-      MANDATORY CONSTRAINT DEFINED(Geometrie_Punkt) OR DEFINED(Geometrie_Linie) OR DEFINED(Geometrie_Flaeche);
-    END Bauwerk_;
+      Arbeiten_Art : BAG {1..3} OF TEXT*20;
+      /** Gebäudekategorie
+       */
+      Gebaeudekategorie : MANDATORY TEXT*100;
+    END Bauwerk;
+
+    STRUCTURE Bauprojekt = 
+      /** Umschreibung des Bauprojektes
+       */
+      Beschreibung : TEXT;
+      /** Art des Bauwerkes (Hoch- und/oder Tiefbaute)
+       */
+      Bauwerk_Art : BAG {1..2} OF TEXT*20; 
+      /** Nutzungszweck
+       */
+      Nutzungszweck : TEXT*200;
+      /** Angaben zu den Bauwerken (falls Hochbaute)
+       */
+      Bauwerke : BAG OF Bauwerk;
+    END Bauprojekt;
 
     TOPIC Geschaefte =
-
       /** Elektronische Baugesuchsgeschäfte
        */
        CLASS Geschaeft =
@@ -172,39 +190,66 @@ VERSION "2025-04-22"  =
         /** Gemeindenummer (der politischen Gemeinde)
          */
         BFSNr : MANDATORY 0..9999;
-        /** Art des Verfahrens
+        /** Art des Verfahrens. Es ist eine abschliessende aber ggf. wechselnde Anzahl an Verfahrensarten. (Voranfrage, Baugesuch, Reklamegesuch, Meldung (Anzeige), Meldung PV-Anlage, EWS).
          */
-        Verfahrensart : MANDATORY TEXT; !! TODO Gibt es sowas? Ordentliches Verfahren, Vereinfachtes Verfahren, Meldeverfahren? Aufzähltyp?
+        Verfahrensart : MANDATORY TEXT*200;
+        /** Lage des Geschäftes / des Baugesuchs
+         */
+        Geometrie_Punkt : GeometryCHLV95_V2.MultiPoint;
+        /** Lage / Geometrie des Geschäftes / des Baugesuchs
+         */
+        Geometrie_Linie : GeometryCHLV95_V2.MultiLine;
+        /** Geometrie des Geschäftes / des Baugesuchs
+         */
+        Geometrie_Flaeche : GeometryCHLV95_V2.MultiSurface;
+        /** Lokalisation
+         */
+        !!@ili2db.mapping=JSON  
+        Lokalisation : Adresse_; !! TODO Nicht mehr ganz sicher, ob es hier ist oder beim Bauprojekt.
         /** Status des Geschäftes
          */
         Status : MANDATORY Status_Geschaeft;
         /** Gesuchssteller resp. Bauherrschaft
          */
+        !!@ili2db.mapping=JSON 
         Gesuchssteller : MANDATORY SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse; 
-        /** Eigentümer des Grundstückes
+        /** Vertretung des Gesuchssteller resp. der Bauherrschaft
          */
-        Grundeigentuemer : SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse;
+        !!@ili2db.mapping=JSON 
+        Gesuchssteller_Vertretung : SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse; 
         /** Projektverfasser
          */
+        !!@ili2db.mapping=JSON 
         Projektverfasser : SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse;
         /** Rechnungsempfänger
          */
+        !!@ili2db.mapping=JSON 
         Rechnungsempfaenger : SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse;
-        /** Informationen zum Bauwerk (Geometrie, Adresse, ...)
+        /** Bauen ausserhalb Bauzone?
          */
-        Bauwerk : BAG {1..*} OF Bauwerk_;
+        ausserhalb_Bauzone : INTERLIS.BOOLEAN;
+        /** Informationen zum Bauprojekt
+         */
+        !!@ili2db.mapping=JSON 
+        Bauprojekte : BAG {1..*} OF Bauprojekt;
         /** Eidgenössischer Grundstücksidentifikator
          */
-        EGRID : BAG {1..*} OF TEXT*14; 
-        /** Entscheid der Leitbehörde.
+        !!@ili2db.mapping=JSON 
+        Grundstuecke : BAG {1..*} OF Grundstueck; 
+        /** Entscheid der Leitbehörde. 
          */
-        Entscheid : Beurteilung;
+        !!@ili2db.mapping=JSON  
+        Entscheid_Leitbehoerde : Entscheid_;
         /** Start- und Enddatum einer allfälligen Publikation.
          */
+        !!@ili2db.mapping=JSON  
         Publikation : Publikation_;
         /** URL für die Anzeige des Geschäftes in eBau.
          */
         eBau_Link : MANDATORY INTERLIS.URI;
+        /** Es muss mindestens eine Geometrie vorhanden sein. TODO: Ist das so? Oder kann bei einem Status auch was optional sein?
+         */
+        MANDATORY CONSTRAINT DEFINED(Geometrie_Punkt) OR DEFINED(Geometrie_Linie) OR DEFINED(Geometrie_Flaeche);
       END Geschaeft;
 
     END Geschaefte;
