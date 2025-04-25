@@ -101,6 +101,15 @@ VERSION "2025-04-22"  =
         Rueckzug
     );
 
+    STRUCTURE PointStructure =
+      Point : GeometryCHLV95_V2.Coord2;
+    END PointStructure;
+  
+    !!@ ili2db.mapping=MultiPoint
+    STRUCTURE MultiPoint =
+      Points : BAG {1..*} OF SO_DSBJD_eBauSO_Geschaefte_20250422.PointStructure;
+    END MultiPoint;
+
     STRUCTURE Adresse_ =
       Strassenname : TEXT*200;
       Hausnummer : TEXT*10;
@@ -133,34 +142,6 @@ VERSION "2025-04-22"  =
       Enddatum : INTERLIS.XMLDate;
     END Publikation_;
 
-    !! TODO Bedingt, dass man das Bauwerk "zeichnet" und nicht einfach Striche und Flächen. Oder halt pro Bauwerk ein Punkt.
-    !! Müsste mit eBau diskutiert werden. 
-    !! Man kann Geometrie schon als Eigenschaft des Geschäftes sehen, aber dann sehe ich schwarz für Lokalisation und EGID.
-    !! Da Bauwerke über mehreren Grundstücken zu liegen kommen können, verschachteln wir Bauwerke nicht in das Grundstück.
-    STRUCTURE Bauwerk_ = 
-      /** Typ des Bauwerkes
-       */
-      Bauwerk_Typ : MANDATORY TEXT*1000; !! TODO Aufzähltyp oder Freitext? Länge?
-      /** Lage des Bauwerkes
-       */
-      Geometrie_Punkt : GeometryCHLV95_V2.MultiPoint;
-      /** Lage / Geometrie des Bauwerkes
-       */
-      Geometrie_Linie : GeometryCHLV95_V2.MultiLine;
-      /** Geometrie des Bauwerkes
-       */
-      Geometrie_Flaeche : GeometryCHLV95_V2.MultiSurface;
-      /** Adresse des geplanten Bauwerkes
-       */ 
-      Lokalisation : Adresse_;
-      /** Eidgenössischer Gebäudeidentifikator
-       */
-      EGID : 1 .. 900000000;
-      /** Es muss mindestens eine Geometrie vorhanden sein. TODO: Ist das so? Oder kann bei einem Status auch was optional sein?
-       */
-      MANDATORY CONSTRAINT DEFINED(Geometrie_Punkt) OR DEFINED(Geometrie_Linie) OR DEFINED(Geometrie_Flaeche);
-    END Bauwerk_;
-
     TOPIC Geschaefte =
 
       /** Elektronische Baugesuchsgeschäfte
@@ -178,6 +159,9 @@ VERSION "2025-04-22"  =
         /** Status des Geschäftes
          */
         Status : MANDATORY Status_Geschaeft;
+        /** Typ des Bauwerkes
+         */
+        Bauwerk_Typ : MANDATORY TEXT*1000; !! TODO Aufzähltyp oder Freitext? Länge?
         /** Gesuchssteller resp. Bauherrschaft
          */
         Gesuchssteller : MANDATORY SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse; 
@@ -190,12 +174,24 @@ VERSION "2025-04-22"  =
         /** Rechnungsempfänger
          */
         Rechnungsempfaenger : SO_DSBJD_eBauSO_Geschaefte_20250422.PersonAdresse;
-        /** Informationen zum Bauwerk (Geometrie, Adresse, ...)
+        /** Lage des Bauprojektes
          */
-        Bauwerk : BAG {1..*} OF Bauwerk_;
+        Geometrie_Punkt :SO_DSBJD_eBauSO_Geschaefte_20250422.MultiPoint;
+        /** Lage / Geometrie des Bauprojektes
+         */
+        Geometrie_Linie : GeometryCHLV95_V2.MultiLine;
+        /** Geometrie des Bauprojektes
+         */
+        Geometrie_Flaeche : GeometryCHLV95_V2.MultiSurface;
+        /** Adresse des Bauprojektes
+         */
+        EGRID : BAG {1..*} OF TEXT*14; !! FIXME und können mehrere sein. ili24????
+        /** EGID des geplanten Bauwerkes
+         */ 
+        Lokalisation : Adresse_;
         /** Eidgenössischer Grundstücksidentifikator
          */
-        EGRID : BAG {1..*} OF TEXT*14; 
+        EGID : 1 .. 900000000; !! FIXME können mehrere sein. Aber wie zu Geometrie zuweisen?
         /** Entscheid der Leitbehörde.
          */
         Entscheid : Beurteilung;
@@ -205,7 +201,11 @@ VERSION "2025-04-22"  =
         /** URL für die Anzeige des Geschäftes in eBau.
          */
         eBau_Link : MANDATORY INTERLIS.URI;
+        /** Es muss mindestens eine Geometrie vorhanden sein. TODO: Ist das so? Oder kann bei einem Status auch was optional sein?
+         */
+        MANDATORY CONSTRAINT DEFINED(Geometrie_Punkt) OR DEFINED(Geometrie_Linie) OR DEFINED(Geometrie_Flaeche);
       END Geschaeft;
+
 
     END Geschaefte;
 
@@ -227,5 +227,25 @@ VERSION "2025-04-22"  =
   !! -> Hat ein Geschäft immer die gleiche ID? Wie geht es bei Zurückweisungen o.ä.?
   !! -> Wahrscheinlich will man den Entscheid persistieren. Es braucht eine Enum für Entscheid. Dürfte es nur für gewissen enum Werte haben.
   !! -> Bekommt jedes Geschäft den Status abgeschlossen? Auch solche, die zurückgezogen wurden? Falls ja, geht dieses Wissen bei uns verloren.
+
+  !! * Zukünftig drei Geometrietypen?
+  !! * Mindestens ein Geometrieattribut muss vorhanden sein.
+
+
+
+    TOPIC Topic2 =
+    
+        STRUCTURE StructA =
+            attrText : TEXT*60;
+            attrInt : -1000 .. 1000;
+        END StructA;
+
+        CLASS ClassA =
+            attrText : TEXT*60;
+            attrStruct : StructA;
+            !!attrBag : BAG OF StructA;
+        END ClassA;
+        
+    END Topic2;
 
 END SO_DSBJD_eBauSO_Geschaefte_20250422.
