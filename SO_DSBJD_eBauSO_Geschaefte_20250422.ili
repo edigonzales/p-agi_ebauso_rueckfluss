@@ -244,6 +244,9 @@ VERSION "2025-04-22"  =
          */
         !!@ili2db.mapping=JSON  
         Publikation : Publikation_;
+        /** Fachstellen, die in einer Zirkulation involviert sind. 
+         */
+        Zirkulation : BAG OF TEXT:200;
         /** URL für die Anzeige des Geschäftes in eBau.
          */
         eBau_Link : MANDATORY INTERLIS.URI;
