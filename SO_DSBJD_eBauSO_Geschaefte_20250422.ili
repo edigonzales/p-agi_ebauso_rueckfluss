@@ -119,16 +119,16 @@ VERSION "2025-04-22"  =
       Gemeinde
     );
 
-    /** Zuständige Person eines Geschäftes innerhalb der Zirkulation / der zugewiesenen Aufgabe.
+    /** Zuständige Person oder zuständige Fachstelle/Amt eines Geschäftes innerhalb der Zirkulation oder bei Leitbehörde.
      * Z.B.
      * ARP, Hans Muster, Kantonale Koordinationsstelle Bauen ausserhalb Bauzone / Fachstelle BaB
      * AfU, Petra Meier, NULL
      */
-    STRUCTURE Zustaendige_Person_  =
+    STRUCTURE Zustaendigkeit  =
       Fachstelle : MANDATORY Fachstellen;
-      Name : MANDATORY TEXT*500; 
+      Name : TEXT*500; 
       Abteilung : TEXT*500;
-    END Zustaendige_Person_ ;
+    END Zustaendigkeit ;
 
     STRUCTURE Adresse_ =
       Strassenname : TEXT*200;
@@ -277,11 +277,11 @@ VERSION "2025-04-22"  =
         Publikation : Publikation_;
         /** Fachstellen, die in einer Zirkulation involviert sind. 
          */
-        Zirkulation : BAG OF TEXT*200;
+        Zirkulation : BAG {0..*} OF Zustaendigkeit;
 
         /** Verantwortliche Personen von einer Aufgabe, die einer einer Fachstelle zugewiesen ist.
          */
-        Zustaendige_Personen : BAG {0..*} OF Zustaendige_Person_;
+        Zustaendige_Personen : BAG {0..*} OF Zustaendigkeit;
 
         /** URL für die Anzeige des Geschäftes in eBau.
          */
