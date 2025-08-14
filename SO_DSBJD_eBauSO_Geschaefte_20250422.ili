@@ -279,9 +279,9 @@ VERSION "2025-04-22"  =
         /** Fachstellen, die in einer Zirkulation involviert sind. 
          */
         Zirkulation : BAG {0..*} OF Zustaendigkeit;
-        /** Verantwortliche Personen von einer Aufgabe, die einer einer Fachstelle zugewiesen ist.
+        /** Verantwortliche Person. Es kann ausserhalb der Zirkulation nur maximal eine Person für ein Geschäft geben.
          */
-        Zustaendige_Personen : BAG {0..*} OF Zustaendigkeit;
+        Zustaendige_Personen : Zustaendigkeit;
         /** URL für die Anzeige des Geschäftes in eBau.
          */
         eBau_Link : MANDATORY INTERLIS.URI;
